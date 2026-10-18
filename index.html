@@ -2,910 +2,413 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Codenames</title>
-
     <style>
         :root {
             --bg: #080a0d;
             --panel: #15181d;
             --text: #f5f5f5;
             --muted: #8e96a3;
-
             --card: #ead9ad;
             --card-text: #171717;
-
             --red: #d93636;
             --blue: #2878c7;
             --black: #101010;
-            --neutral: #c9b78d;
         }
 
-        * {
+        *, *::before, *::after {
             box-sizing: border-box;
         }
 
-        html,
-        body {
+        html, body {
             margin: 0;
             width: 100%;
             height: 100%;
         }
 
         body {
-            background:
-                radial-gradient(
-                    circle at 50% 0%,
-                    #202631 0%,
-                    #080a0d 60%
-                );
-
+            background: radial-gradient(circle at 50% 0%, #202631 0%, #080a0d 60%);
             color: var(--text);
-
-            font-family:
-                system-ui,
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                sans-serif;
-
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             overflow: hidden;
-
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-
-        /* =========================================
-           HEADER
-        ========================================= */
-
         header {
             width: min(1500px, 94vw);
-
             flex: 0 0 auto;
-
             display: flex;
             align-items: center;
             justify-content: space-between;
-
             gap: 20px;
-
-            padding:
-                clamp(8px, 1.5vh, 22px)
-                0
-                clamp(5px, 1vh, 14px);
-        }
-
-        .title-area {
-            min-width: 0;
+            padding: clamp(8px, 1.5vh, 22px) 0 clamp(5px, 1vh, 14px);
         }
 
         h1 {
             margin: 0;
-
-            font-size:
-                clamp(20px, 3.2vh, 46px);
-
+            font-size: clamp(20px, 3.2vh, 46px);
             line-height: 1;
-
             letter-spacing: -1px;
         }
 
-        .game-number {
-            color: white;
-        }
-
-        .game-id {
-            margin-top: 5px;
-
-            color: var(--muted);
-
-            font-size:
-                clamp(9px, 1.3vh, 16px);
-        }
-
-
-        /* =========================================
-           CONTROLS
-        ========================================= */
+        .game-number { color: white; }
+        .game-id { margin-top: 5px; color: var(--muted); font-size: clamp(9px, 1.3vh, 16px); }
 
         #controls {
             display: flex;
             gap: 8px;
-
             flex-shrink: 0;
         }
 
         .control {
-            min-height:
-                clamp(36px, 5vh, 58px);
-
-            padding:
-                0
-                clamp(10px, 1.2vw, 22px);
-
-            border-radius:
-                clamp(5px, 0.6vw, 10px);
-
+            min-height: clamp(36px, 5vh, 58px);
+            padding: 0 clamp(10px, 1.2vw, 22px);
+            border-radius: clamp(5px, 0.6vw, 10px);
             border: 1px solid #353a43;
-
             background: var(--panel);
             color: white;
-
-            font-size:
-                clamp(11px, 1.5vh, 18px);
-
+            font-size: clamp(11px, 1.5vh, 18px);
             font-weight: 700;
-
             cursor: pointer;
-
             white-space: nowrap;
         }
 
-        .control:hover {
-            background: #252a32;
-        }
-
-        .control:active {
-            transform: scale(0.97);
-        }
-
-        .control.primary {
-            background: #f3f3f3;
-            color: #111;
-
-            border-color: white;
-        }
-
-
-        /* =========================================
-           STATUS
-        ========================================= */
+        .control:hover { background: #252a32; }
+        .control:active { transform: scale(0.97); }
+        .control.primary { background: #f3f3f3; color: #111; border-color: white; }
 
         #status {
             width: min(1500px, 94vw);
-
             flex: 0 0 auto;
-
             display: flex;
             justify-content: space-between;
             align-items: center;
-
-            padding-bottom:
-                clamp(5px, 1vh, 12px);
-
-            font-size:
-                clamp(9px, 1.35vh, 16px);
-
+            padding-bottom: clamp(5px, 1vh, 12px);
+            font-size: clamp(9px, 1.35vh, 16px);
             color: var(--muted);
         }
 
-        #viewStatus {
-            color: #e3e6eb;
-            font-weight: 700;
-        }
-
-
-        /* =========================================
-           BOARD AREA
-        ========================================= */
+        #viewStatus { color: #e3e6eb; font-weight: 700; }
 
         #board-area {
-            /*
-             * This is the important part.
-             *
-             * The board is allowed to use the remaining
-             * viewport instead of blindly sizing from width.
-             */
             flex: 1 1 auto;
-
             min-height: 0;
             min-width: 0;
-
             width: 100%;
-
             display: flex;
             align-items: center;
             justify-content: center;
-
-            padding:
-                0
-                clamp(5px, 2vw, 30px)
-                clamp(5px, 2vh, 25px);
+            padding: 0 clamp(5px, 2vw, 30px) clamp(5px, 2vh, 25px);
         }
-
 
         #cards {
-            /*
-             * 5 cards wide.
-             *
-             * The board's maximum width is based on the
-             * available height, preserving the card ratio.
-             */
-            width: min(
-                94vw,
-                calc((100vh - 150px) * 1.43)
-            );
-
+            width: min(94vw, calc((100vh - 150px) * 1.43));
             max-width: 1500px;
-
             display: grid;
-
-            grid-template-columns:
-                repeat(5, minmax(0, 1fr));
-
-            grid-template-rows:
-                repeat(5, minmax(0, 1fr));
-
-            gap:
-                clamp(4px, 0.8vw, 14px);
-
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            grid-template-rows: repeat(5, minmax(0, 1fr));
+            gap: clamp(4px, 0.8vw, 14px);
             aspect-ratio: 1.43 / 1;
-
             max-height: 100%;
-
-            min-width: 0;
-            min-height: 0;
         }
 
-
-        /* =========================================
-           CARDS
-        ========================================= */
-
         .card {
-            min-width: 0;
-            min-height: 0;
-
             width: 100%;
             height: 100%;
-
             border: 0;
-
-            border-radius:
-                clamp(4px, 0.65vw, 12px);
-
+            border-radius: clamp(4px, 0.65vw, 12px);
             background: var(--card);
             color: var(--card-text);
-
-            padding:
-                clamp(3px, 0.8vw, 14px);
-
+            padding: clamp(3px, 0.8vw, 14px);
             display: flex;
             align-items: center;
             justify-content: center;
-
             text-align: center;
-
             font-family: inherit;
-
-            /*
-             * Text scales primarily with viewport height
-             * so it doesn't become enormous on wide TVs.
-             */
-            font-size:
-                clamp(9px, 2.25vh, 32px);
-
+            font-size: clamp(9px, 2.25vh, 32px);
             line-height: 1.05;
-
             font-weight: 900;
-
             text-transform: uppercase;
-
             overflow: hidden;
-
             cursor: pointer;
-
-            box-shadow:
-                inset 0 0 0 1px
-                rgba(0, 0, 0, 0.16),
-
-                0 2px 8px
-                rgba(0, 0, 0, 0.28);
-
-            transition:
-                transform 0.1s,
-                filter 0.1s;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.28);
+            transition: transform 0.1s, filter 0.1s;
         }
 
-        .card:hover {
-            filter: brightness(1.06);
-            transform: scale(1.015);
-            z-index: 2;
-        }
+        .card:hover { filter: brightness(1.06); transform: scale(1.015); z-index: 2; }
+        .card:active { transform: scale(0.97); }
+        .card:focus-visible { outline: 3px solid white; outline-offset: 2px; }
 
-        .card:active {
-            transform: scale(0.97);
-        }
-
-        .card:focus-visible {
-            outline: 3px solid white;
-            outline-offset: 2px;
-        }
-
+        .card.red { background: var(--red); color: white; }
+        .card.blue { background: var(--blue); color: white; }
+        .card.black { background: var(--black); color: white; box-shadow: inset 0 0 0 2px #555, 0 3px 10px rgba(0,0,0,0.5); }
+        .card.neutral { background: white; color: black; }
 
         /* =========================================
-           REVEALED COLORS
+           QR MODAL STYLES
         ========================================= */
 
-        .card.red {
-            background: var(--red);
-            color: white;
+        #qrModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
         }
 
-        .card.blue {
-            background: var(--blue);
-            color: white;
+        #qrModal.active {
+            display: flex;
         }
 
-        .card.black {
-            background: var(--black);
-            color: white;
-
-            box-shadow:
-                inset 0 0 0 2px #555,
-                0 3px 10px rgba(0, 0, 0, 0.5);
+        .qr-card {
+            background: #171a21;
+            border: 1px solid #353a43;
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            max-width: 90vw;
+            position: relative;
         }
 
-        .card.neutral {
+        .qr-image-wrapper {
             background: white;
-            color: black;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-
-        /* =========================================
-           LARGE TV
-        ========================================= */
-
-        @media (min-width: 1000px) and (min-height: 500px) {
-            header,
-            #status {
-                width: min(1500px, 92vw);
-            }
-
-            #cards {
-                /*
-                 * At least 25px of space is left for the
-                 * header/status area.
-                 */
-                width: min(
-                    92vw,
-                    calc((100vh - 145px) * 1.43)
-                );
-            }
+        .qr-image-wrapper img {
+            width: min(50vh, 60vw);
+            height: min(50vh, 60vw);
+            object-fit: contain;
         }
 
+        .qr-title {
+            margin: 0;
+            font-size: clamp(20px, 3vh, 32px);
+            font-weight: 800;
+            color: #fff;
+        }
 
-        /* =========================================
-           PHONE
-        ========================================= */
+        .qr-subtitle {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: clamp(12px, 1.8vh, 18px);
+        }
+
+        .close-qr {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-size: 28px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .close-qr:hover {
+            color: #fff;
+        }
 
         @media (max-width: 700px) {
-            body {
-                overflow: auto;
-                min-height: 100vh;
-                height: auto;
-            }
-
-            header {
-                width: calc(100% - 20px);
-
-                align-items: flex-start;
-
-                padding-top: 12px;
-            }
-
-            h1 {
-                font-size: 25px;
-            }
-
-            .game-id {
-                font-size: 10px;
-            }
-
-            #controls {
-                flex-direction: column;
-                gap: 5px;
-            }
-
-            .control {
-                min-height: 40px;
-                font-size: 12px;
-                padding: 0 10px;
-            }
-
-            #status {
-                width: calc(100% - 20px);
-                padding-bottom: 8px;
-
-                font-size: 10px;
-            }
-
-            #board-area {
-                flex: 0 0 auto;
-
-                padding:
-                    0
-                    10px
-                    15px;
-            }
-
-            #cards {
-                width: 100%;
-
-                aspect-ratio: 1 / 1;
-
-                gap: 4px;
-            }
-
-            .card {
-                border-radius: 5px;
-
-                padding: 3px;
-
-                font-size:
-                    clamp(8px, 2.9vw, 15px);
-            }
+            body { overflow: auto; height: auto; }
+            header, #status { width: calc(100% - 20px); }
+            header { align-items: flex-start; padding-top: 12px; }
+            h1 { font-size: 25px; }
+            .game-id { font-size: 10px; }
+            #controls { flex-direction: column; gap: 5px; }
+            .control { min-height: 40px; font-size: 12px; padding: 0 10px; }
+            #board-area { flex: 0 0 auto; padding: 0 10px 15px; }
+            #cards { width: 100%; aspect-ratio: 1 / 1; }
+            .card { font-size: clamp(8px, 2.9vw, 15px); }
         }
-
-
-        /* =========================================
-           VERY SHORT TV / LANDSCAPE
-        ========================================= */
-
-        @media (min-width: 700px) and (max-height: 600px) {
-            header {
-                padding-top: 5px;
-                padding-bottom: 4px;
-            }
-
-            #status {
-                padding-bottom: 4px;
-            }
-
-            #cards {
-                width: min(
-                    92vw,
-                    calc((100vh - 105px) * 1.43)
-                );
-            }
-        }
-
-
-        /* =========================================
-           REDUCE MOTION
-        ========================================= */
 
         @media (prefers-reduced-motion: reduce) {
-            .card,
-            .control {
-                transition: none;
-            }
+            .card, .control { transition: none; }
         }
     </style>
 </head>
-
 <body>
 
     <header>
         <div class="title-area">
-            <h1>
-                Game
-                <span
-                    class="game-number"
-                    id="session"
-                >0</span>
-            </h1>
-
-            <div
-                class="game-id"
-                id="gameId"
-            ></div>
+            <h1>Game <span class="game-number" id="session">0</span></h1>
+            <div class="game-id" id="gameId"></div>
         </div>
-
         <div id="controls">
-            <button
-                class="control"
-                id="switchTeam"
-                type="button"
-            >
-                👁 Reveal Key
-            </button>
-
-            <button
-                class="control primary"
-                id="nextGame"
-                type="button"
-            >
-                Next Game
-            </button>
+            <button class="control" type="button" onclick="document.body.requestFullscreen()">⛶</button>
+            <button class="control" id="openQr" type="button" title="Scan to play on phone">QR</button>
+            <button class="control" id="switchTeam" type="button">Reveal Key</button>
+            <button class="control" id="prevGame" type="button">Prev Game</button>
+            <button class="control primary" id="nextGame" type="button">Next Game</button>
         </div>
     </header>
 
-
     <div id="status">
-        <span id="viewStatus">
-            Players' View
-        </span>
-
-        <span>
-            Tap a card to reveal
-        </span>
+        <span id="viewStatus">Players' View</span>
+        <span>Tap a card to reveal</span>
     </div>
-
 
     <div id="board-area">
         <main id="cards"></main>
     </div>
 
+    <!-- QR Code Overlay Modal -->
+    <div id="qrModal">
+        <div class="qr-card">
+            <button class="close-qr" id="closeQr" type="button">&times;</button>
+            <h2 class="qr-title">Scan to Join Game</h2>
+            <div class="qr-subtitle" id="qrGameIdDisplay"></div>
+            <div class="qr-image-wrapper">
+                <img src="./qr.svg" alt="Scan QR Code to Join Game" />
+            </div>
+            <div class="qr-subtitle">Scan with your phone camera to play</div>
+        </div>
+    </div>
 
     <script>
-        const cardsElement =
-            document.getElementById("cards");
+        const cardsElement = document.getElementById("cards");
+        const sessionElement = document.getElementById("session");
+        const gameIdElement = document.getElementById("gameId");
+        const switchTeamButton = document.getElementById("switchTeam");
+        const prevGameButton = document.getElementById("prevGame");
+        const nextGameButton = document.getElementById("nextGame");
+        const viewStatus = document.getElementById("viewStatus");
 
-        const sessionElement =
-            document.getElementById("session");
+        const openQrButton = document.getElementById("openQr");
+        const closeQrButton = document.getElementById("closeQr");
+        const qrModal = document.getElementById("qrModal");
+        const qrGameIdDisplay = document.getElementById("qrGameIdDisplay");
 
-        const gameIdElement =
-            document.getElementById("gameId");
-
-        const switchTeamButton =
-            document.getElementById("switchTeam");
-
-        const nextGameButton =
-            document.getElementById("nextGame");
-
-        const viewStatus =
-            document.getElementById("viewStatus");
-
-
-        let session = Number(
-            localStorage.getItem(
-                "codenames-session"
-            ) || 0
-        );
-
+        let session = Number(localStorage.getItem("codenames-session") || 0);
         let revealAll = false;
-
         let currentCards = [];
+        let cachedWords = null;
 
+        const getDateString = () => {
+            const d = new Date();
+            return `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}/${String(d.getFullYear()).slice(-2)}`;
+        };
 
-        /*
-         * Get today's date.
-         *
-         * Example:
-         * 09/27/26
-         */
-        function getDateString() {
-            const date = new Date();
-
-            const month =
-                String(date.getMonth() + 1)
-                    .padStart(2, "0");
-
-            const day =
-                String(date.getDate())
-                    .padStart(2, "0");
-
-            const year =
-                String(date.getFullYear())
-                    .slice(-2);
-
-            return `${month}/${day}/${year}`;
-        }
-
-
-        /*
-         * Convert text into a deterministic number.
-         */
-        function stringToSeed(string) {
+        const stringToSeed = (str) => {
             let hash = 2166136261;
-
-            for (
-                let i = 0;
-                i < string.length;
-                i++
-            ) {
-                hash ^= string.charCodeAt(i);
-
-                hash +=
-                    (hash << 1) +
-                    (hash << 4) +
-                    (hash << 7) +
-                    (hash << 8) +
-                    (hash << 24);
+            for (let i = 0; i < str.length; i++) {
+                hash ^= str.charCodeAt(i);
+                hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
             }
-
             return hash >>> 0;
-        }
+        };
 
+        const seededRandom = (seed) => () => {
+            seed += 0x6D2B79F5;
+            let t = seed;
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
 
-        /*
-         * Seeded random number generator.
-         */
-        function seededRandom(seed) {
-            return function () {
-                seed += 0x6D2B79F5;
+        const shuffle = (array, random) => {
+            const res = [...array];
+            for (let i = res.length - 1; i > 0; i--) {
+                const j = Math.floor(random() * (i + 1));
+                [res[i], res[j]] = [res[j], res[i]];
+            }
+            return res;
+        };
 
-                let t = seed;
+        const generateBoard = (words) => {
+            const dateStr = getDateString();
+            const gameId = `${dateStr}-${session}`;
+            gameIdElement.textContent = gameId;
+            qrGameIdDisplay.textContent = `Game ID: ${gameId}`;
 
-                t = Math.imul(
-                    t ^ (t >>> 15),
-                    t | 1
-                );
+            const seed = stringToSeed(gameId);
+            const random = seededRandom(seed);
 
-                t ^= t + Math.imul(
-                    t ^ (t >>> 7),
-                    t | 61
-                );
-
-                return (
-                    (t ^ (t >>> 14)) >>> 0
-                ) / 4294967296;
-            };
-        }
-
-
-        /*
-         * Deterministic shuffle.
-         */
-        function shuffle(array, random) {
-            const result = [...array];
-
-            for (
-                let i = result.length - 1;
-                i > 0;
-                i--
-            ) {
-                const j =
-                    Math.floor(
-                        random() * (i + 1)
-                    );
-
-                [
-                    result[i],
-                    result[j]
-                ] = [
-                    result[j],
-                    result[i]
-                ];
+            // Systemic non-repeating deck chunking based on session index
+            const masterDeck = shuffle(words, seededRandom(stringToSeed(dateStr)));
+            const startIndex = (session * 25) % masterDeck.length;
+            let selectedWords = masterDeck.slice(startIndex, startIndex + 25);
+            
+            // Wrap around safely if dictionary exhausts
+            if (selectedWords.length < 25) {
+                selectedWords = [...selectedWords, ...masterDeck.slice(0, 25 - selectedWords.length)];
             }
 
-            return result;
-        }
-
-
-        /*
-         * Codenames roles:
-         *
-         * 9 red
-         * 8 blue
-         * 7 neutral
-         * 1 assassin
-         */
-        function createRoles(random) {
-            const roles = [
+            const roles = shuffle([
                 ...Array(9).fill("red"),
                 ...Array(8).fill("blue"),
                 ...Array(7).fill("neutral"),
                 "black"
-            ];
+            ], random);
 
-            return shuffle(
-                roles,
-                random
-            );
-        }
-
-
-        /*
-         * Generate the board.
-         */
-        function generateBoard(words) {
-            const date =
-                getDateString();
-
-            const gameId =
-                `${date}-${session}`;
-
-            gameIdElement.textContent =
-                gameId;
-
-            const seed =
-                stringToSeed(gameId);
-
-            const random =
-                seededRandom(seed);
-
-            const shuffledWords =
-                shuffle(words, random);
-
-            const selectedWords =
-                shuffledWords.slice(0, 25);
-
-            const roles =
-                createRoles(random);
-
-            currentCards =
-                selectedWords.map(
-                    (word, index) => ({
-                        word: word,
-                        role: roles[index],
-                        revealed: false
-                    })
-                );
-
+            currentCards = selectedWords.map((word, i) => ({ word, role: roles[i], revealed: false }));
             revealAll = false;
-
             renderCards();
-        }
+        };
 
-
-        /*
-         * Render cards.
-         */
-        function renderCards() {
+        const renderCards = () => {
             cardsElement.innerHTML = "";
+            currentCards.forEach((cardData, index) => {
+                const card = document.createElement("button");
+                card.type = "button";
+                card.className = "card";
+                card.textContent = cardData.word;
 
-            currentCards.forEach(
-                (cardData, index) => {
-                    const card =
-                        document.createElement(
-                            "button"
-                        );
-
-                    card.type = "button";
-
-                    card.className =
-                        "card";
-
-                    card.textContent =
-                        cardData.word;
-
-                    /*
-                     * Reveal if:
-                     *
-                     * - The individual card was clicked
-                     * OR
-                     * - The entire key is visible
-                     */
-                    if (
-                        cardData.revealed ||
-                        revealAll
-                    ) {
-                        card.classList.add(
-                            cardData.role
-                        );
-                    }
-
-                    /*
-                     * Individual card reveal.
-                     */
-                    card.addEventListener(
-                        "click",
-                        () => {
-                            if (revealAll) {
-                                return;
-                            }
-
-                            currentCards[index]
-                                .revealed = true;
-
-                            renderCards();
-                        }
-                    );
-
-                    cardsElement.appendChild(
-                        card
-                    );
+                if (cardData.revealed || revealAll) {
+                    card.classList.add(cardData.role);
                 }
-            );
 
-            updateStatus();
-        }
+                card.addEventListener("click", () => {
+                    if (revealAll) return;
+                    currentCards[index].revealed = true;
+                    renderCards();
+                });
 
+                cardsElement.appendChild(card);
+            });
 
-        /*
-         * Update controls/status.
-         */
-        function updateStatus() {
-            if (revealAll) {
-                viewStatus.textContent =
-                    "🔐 Clue Master View";
+            viewStatus.textContent = revealAll ? "Clue Master View" : "Players' View";
+            switchTeamButton.textContent = revealAll ? "Hide Key" : "Reveal Key";
+        };
 
-                switchTeamButton.textContent =
-                    "🙈 Hide Key";
-            } else {
-                viewStatus.textContent =
-                    "Players' View";
-
-                switchTeamButton.textContent =
-                    "👁 Reveal Key";
-            }
-        }
-
-
-        /*
-         * Reveal/hide entire key.
-         */
-        switchTeamButton.addEventListener(
-            "click",
-            () => {
-                revealAll = !revealAll;
-
-                renderCards();
-            }
-        );
-
-
-        /*
-         * Start next game.
-         */
-        nextGameButton.addEventListener(
-            "click",
-            () => {
-                session++;
-
-                localStorage.setItem(
-                    "codenames-session",
-                    session
-                );
-
-                sessionElement.textContent =
-                    session;
-
-                loadGame();
-            }
-        );
-
-
-        /*
-         * Load words.txt.
-         */
         async function loadGame() {
             try {
-                const response =
-                    await fetch("./words.txt");
+                if (!cachedWords) {
+                    const response = await fetch("./source/words.txt");
+                    if (!response.ok) throw new Error("Could not load words.txt");
 
-                if (!response.ok) {
-                    throw new Error(
-                        "Could not load words.txt"
-                    );
-                }
-
-                const text =
-                    await response.text();
-
-                const words =
-                    text
+                    const text = await response.text();
+                    cachedWords = text
                         .split(/\r?\n/)
-                        .map(
-                            word =>
-                                word.trim()
-                        )
-                        .filter(
-                            word =>
-                                word.length > 0
-                        );
+                        .map(word => word.trim())
+                        .filter(word => word.length > 0);
 
-                if (words.length < 25) {
-                    throw new Error(
-                        "words.txt needs at least 25 words."
-                    );
+                    if (cachedWords.length < 25) {
+                        throw new Error("words.txt needs at least 25 words.");
+                    }
                 }
 
-                generateBoard(words);
+                generateBoard(cachedWords);
 
             } catch (error) {
                 console.error(error);
-
                 cardsElement.innerHTML = `
                     <div style="
                         grid-column: 1 / -1;
@@ -925,12 +428,41 @@
             }
         }
 
+        // Modal triggers
+        openQrButton.addEventListener("click", () => qrModal.classList.add("active"));
+        closeQrButton.addEventListener("click", () => qrModal.classList.remove("active"));
+        qrModal.addEventListener("click", (e) => {
+            if (e.target === qrModal) qrModal.classList.remove("active");
+        });
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") qrModal.classList.remove("active");
+        });
 
-        sessionElement.textContent =
-            session;
+        switchTeamButton.addEventListener("click", () => {
+            if (confirm("Are you the clue giver?")) {
+                revealAll = !revealAll;
+                renderCards();
+            }
+        });
 
+        prevGameButton.addEventListener("click", () => {
+            if (session > 0) {
+                session--;
+                localStorage.setItem("codenames-session", session);
+                sessionElement.textContent = session;
+                loadGame();
+            }
+        });
+
+        nextGameButton.addEventListener("click", () => {
+            session++;
+            localStorage.setItem("codenames-session", session);
+            sessionElement.textContent = session;
+            loadGame();
+        });
+
+        sessionElement.textContent = session;
         loadGame();
     </script>
-
 </body>
 </html>
